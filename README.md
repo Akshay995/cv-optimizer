@@ -125,7 +125,3 @@ Accepts `multipart/form-data`.
 | `targetRole` | String | No | Role to tailor the CV toward |
 
 Returns the optimized CV as a PDF file download, or a JSON error object on failure.
-
-## License
-
-MIT
