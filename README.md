@@ -21,6 +21,7 @@ An AI-powered resume enhancement tool that automatically rewrites and formats CV
 | DOCX parsing | Apache POI 5.2.5 |
 | PDF generation | iText 7.2.5 |
 | Frontend | Thymeleaf, Bootstrap 5.3.2 |
+| API Docs | springdoc-openapi 2.3.0 (Swagger UI) |
 | Build | Maven |
 
 ## Prerequisites
@@ -71,7 +72,11 @@ run.bat
 
 ### 4. Open the app
 
-Navigate to [http://localhost:8087](http://localhost:8087) in your browser.
+| URL | Description |
+|---|---|
+| [http://localhost:8087](http://localhost:8087) | Web UI |
+| [http://localhost:8087/swagger-ui.html](http://localhost:8087/swagger-ui.html) | Swagger UI |
+| [http://localhost:8087/api-docs](http://localhost:8087/api-docs) | OpenAPI JSON spec |
 
 ## Configuration
 
@@ -83,6 +88,8 @@ All settings are in `src/main/resources/application.properties`:
 | `claude.api.key` | `${CLAUDE_API_KEY}` | Anthropic API key (use env var) |
 | `claude.api.model` | `claude-sonnet-4-6` | Claude model to use |
 | `spring.servlet.multipart.max-file-size` | `5MB` | Max upload size |
+| `springdoc.swagger-ui.path` | `/swagger-ui.html` | Swagger UI path |
+| `springdoc.api-docs.path` | `/api-docs` | OpenAPI spec path |
 
 ## Project Structure
 
@@ -115,13 +122,15 @@ src/main/
 
 ## API
 
+Interactive API documentation is available via Swagger UI at `/swagger-ui.html` when the app is running.
+
 ### `POST /optimize`
 
 Accepts `multipart/form-data`.
 
 | Field | Type | Required | Description |
 |---|---|---|---|
-| `cvFile` | File | Yes | PDF, DOCX, or TXT file |
+| `file` | File | Yes | PDF, DOCX, or TXT file (max 5 MB) |
 | `targetRole` | String | No | Role to tailor the CV toward |
 
 Returns the optimized CV as a PDF file download, or a JSON error object on failure.
