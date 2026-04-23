@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI CV Optimizer</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --navy:   #0f172a;
+            --blue:   #0ea5e9;
+            --teal:   #06b6d4;
+            --light:  #f0f9ff;
+            --border: #e2e8f0;
+        }
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+        }
+        .glass-card {
+            background: rgba(255,255,255,0.97);
+            border-radius: 20px;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.4);
+        }
+        .brand-title {
+            background: linear-gradient(90deg, #0ea5e9, #06b6d4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 800;
+            font-size: 2.2rem;
+        }
+        .drop-zone {
+            border: 2.5px dashed #cbd5e1;
+            border-radius: 14px;
+            padding: 48px 24px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            background: #f8fafc;
+        }
+        .drop-zone:hover, .drop-zone.dragover {
+            border-color: var(--blue);
+            background: #e0f2fe;
+        }
+        .drop-zone .icon { font-size: 3rem; color: #94a3b8; }
+        .drop-zone:hover .icon { color: var(--blue); }
+        .file-selected { border-color: #22c55e !important; background: #f0fdf4 !important; }
+        .file-selected .icon { color: #22c55e !important; }
+        .btn-optimize {
+            background: linear-gradient(135deg, #0ea5e9, #06b6d4);
+            border: none;
+            color: white;
+            font-weight: 700;
+            font-size: 1.05rem;
+            padding: 14px 36px;
+            border-radius: 12px;
+            transition: all 0.25s;
+            letter-spacing: 0.5px;
+        }
+        .btn-optimize:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(14,165,233,0.4); color: white; }
+        .btn-optimize:disabled { opacity: 0.7; transform: none; }
+        .feature-badge {
+            background: #e0f2fe;
+            color: #0369a1;
+            border-radius: 20px;
+            padding: 5px 14px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: inline-block;
+            margin: 3px;
+        }
+        .progress-wrap { display: none; }
+        .spinner-border { width: 1.2rem; height: 1.2rem; }
+        #error-alert { display: none; }
+        .step-icon {
+            width: 40px; height: 40px; border-radius: 50%;
+            background: linear-gradient(135deg, #0ea5e9, #06b6d4);
+            color: white; display: flex; align-items: center; justify-content: center;
+            font-weight: 700; font-size: 0.9rem; flex-shrink: 0;
+        }
+        #file-input { display: none; }
+    </style>
+</head>
+<body class="d-flex align-items-center justify-content-center py-5">
+<div class="container" style="max-width: 720px;">
+
+    <div class="glass-card p-5">
+
+        <!-- Header -->
+        <div class="text-center mb-4">
+            <div class="mb-2">
+                <i class="bi bi-file-earmark-person-fill" style="font-size:2.5rem; color:#0ea5e9;"></i>
+            </div>
+            <h1 class="brand-title mb-1">AI CV Optimizer</h1>
+            <p class="text-muted mb-3">Upload your CV, get a tech-optimized, ATS-ready PDF in seconds</p>
+            <div>
+                <span class="feature-badge"><i class="bi bi-magic"></i> AI Enhanced</span>
+                <span class="feature-badge"><i class="bi bi-check2-circle"></i> ATS Optimized</span>
+                <span class="feature-badge"><i class="bi bi-filetype-pdf"></i> PDF Output</span>
+                <span class="feature-badge"><i class="bi bi-lightning-fill"></i> Powered by Claude</span>
+            </div>
+        </div>
+
+        <!-- How it works -->
+        <div class="row g-2 mb-4 text-center">
+            <div class="col-4">
+                <div class="d-flex flex-column align-items-center gap-1">
+                    <div class="step-icon">1</div>
+                    <small class="text-muted fw-semibold">Upload CV</small>
+                    <small class="text-muted" style="font-size:0.72rem;">PDF, DOCX, or TXT</small>
+                </div>
+            </div>
+            <div class="col-4">
+                <div class="d-flex flex-column align-items-center gap-1">
+                    <div class="step-icon">2</div>
+                    <small class="text-muted fw-semibold">Claude Enhances</small>
+                    <small class="text-muted" style="font-size:0.72rem;">AI rewrites & optimizes</small>
+                </div>
+            </div>
+            <div class="col-4">
+                <div class="d-flex flex-column align-items-center gap-1">
+                    <div class="step-icon">3</div>
+                    <small class="text-muted fw-semibold">Download PDF</small>
+                    <small class="text-muted" style="font-size:0.72rem;">Professional & beautiful</small>
+                </div>
+            </div>
+        </div>
+
+        <hr class="mb-4">
+
+        <!-- Upload Form -->
+        <form id="cv-form">
+            <!-- Drop zone -->
+            <div class="drop-zone mb-3" id="drop-zone" onclick="document.getElementById('file-input').click()">
+                <div class="icon mb-2"><i class="bi bi-cloud-upload-fill"></i></div>
+                <p class="mb-1 fw-semibold text-secondary" id="drop-text">Drag & drop your CV here</p>
+                <p class="text-muted small mb-2">or click to browse</p>
+                <small class="text-muted">Supported: PDF, DOCX, TXT &nbsp;|&nbsp; Max 5 MB</small>
+            </div>
+            <input type="file" id="file-input" accept=".pdf,.docx,.txt">
+
+            <!-- Target role (optional) -->
+            <div class="mb-4">
+                <label class="form-label fw-semibold small text-secondary">
+                    <i class="bi bi-briefcase-fill me-1"></i>Target Role <span class="text-muted fw-normal">(optional — helps AI focus)</span>
+                </label>
+                <input type="text" class="form-control" id="target-role"
+                       placeholder="e.g. Senior Java Engineer, ML Engineer, DevOps Lead">
+            </div>
+
+            <!-- Error alert -->
+            <div class="alert alert-danger d-flex align-items-center gap-2" id="error-alert" role="alert">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+                <span id="error-msg"></span>
+            </div>
+
+            <!-- Progress -->
+            <div class="progress-wrap text-center mb-3" id="progress-wrap">
+                <div class="d-flex align-items-center justify-content-center gap-2 text-primary">
+                    <div class="spinner-border" role="status"></div>
+                    <span id="progress-text" class="fw-semibold">Parsing your CV...</span>
+                </div>
+                <small class="text-muted mt-1 d-block">This takes 15-30 seconds. Claude is enhancing every line.</small>
+            </div>
+
+            <!-- Submit -->
+            <div class="text-center">
+                <button type="submit" class="btn btn-optimize" id="submit-btn">
+                    <i class="bi bi-stars me-2"></i>Optimize My CV
+                </button>
+            </div>
+        </form>
+
+        <!-- Footer note -->
+        <p class="text-center text-muted small mt-4 mb-0">
+            <i class="bi bi-shield-lock-fill me-1"></i>
+            Your CV is processed securely and never stored.
+        </p>
+    </div>
+</div>
+
+<script>
+    const dropZone   = document.getElementById('drop-zone');
+    const fileInput  = document.getElementById('file-input');
+    const dropText   = document.getElementById('drop-text');
+    const form       = document.getElementById('cv-form');
+    const submitBtn  = document.getElementById('submit-btn');
+    const progressWrap = document.getElementById('progress-wrap');
+    const progressText = document.getElementById('progress-text');
+    const errorAlert = document.getElementById('error-alert');
+    const errorMsg   = document.getElementById('error-msg');
+
+    let selectedFile = null;
+
+    // Drag & drop
+    dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+    dropZone.addEventListener('drop', e => {
+        e.preventDefault();
+        dropZone.classList.remove('dragover');
+        const file = e.dataTransfer.files[0];
+        if (file) handleFile(file);
+    });
+
+    fileInput.addEventListener('change', () => {
+        if (fileInput.files[0]) handleFile(fileInput.files[0]);
+    });
+
+    function handleFile(file) {
+        const allowed = ['pdf', 'docx', 'txt'];
+        const ext = file.name.split('.').pop().toLowerCase();
+        if (!allowed.includes(ext)) {
+            showError('Please upload a PDF, DOCX, or TXT file.');
+            return;
+        }
+        if (file.size > 5 * 1024 * 1024) {
+            showError('File size must be under 5 MB.');
+            return;
+        }
+        selectedFile = file;
+        dropZone.classList.add('file-selected');
+        dropZone.querySelector('.icon').innerHTML = '<i class="bi bi-file-earmark-check-fill"></i>';
+        dropText.textContent = file.name;
+        hideError();
+    }
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        if (!selectedFile) { showError('Please select a file first.'); return; }
+
+        hideError();
+        submitBtn.disabled = true;
+        progressWrap.style.display = 'block';
+
+        const messages = [
+            'Parsing your CV...',
+            'Sending to Claude AI...',
+            'Enhancing bullet points...',
+            'Optimizing for ATS systems...',
+            'Generating professional PDF...'
+        ];
+        let msgIdx = 0;
+        const msgTimer = setInterval(() => {
+            msgIdx = (msgIdx + 1) % messages.length;
+            progressText.textContent = messages[msgIdx];
+        }, 5000);
+
+        const formData = new FormData();
+        formData.append('file', selectedFile);
+        const role = document.getElementById('target-role').value.trim();
+        if (role) formData.append('targetRole', role);
+
+        try {
+            const response = await fetch('/optimize', { method: 'POST', body: formData });
+
+            clearInterval(msgTimer);
+            progressWrap.style.display = 'none';
+            submitBtn.disabled = false;
+
+            if (!response.ok) {
+                const err = await response.json().catch(() => ({ error: 'Unexpected error. Please try again.' }));
+                showError(err.error || 'Processing failed. Please try again.');
+                return;
+            }
+
+            // Trigger PDF download
+            const blob = await response.blob();
+            const url  = URL.createObjectURL(blob);
+            const a    = document.createElement('a');
+            const disp = response.headers.get('Content-Disposition') || '';
+            const nameMatch = disp.match(/filename="?([^"]+)"?/);
+            a.download = nameMatch ? nameMatch[1] : 'Enhanced_CV.pdf';
+            a.href = url;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(url);
+
+            // Reset form
+            resetForm();
+
+        } catch (err) {
+            clearInterval(msgTimer);
+            progressWrap.style.display = 'none';
+            submitBtn.disabled = false;
+            showError('Network error. Please check your connection and try again.');
+        }
+    });
+
+    function showError(msg) {
+        errorMsg.textContent = msg;
+        errorAlert.style.display = 'flex';
+    }
+    function hideError() { errorAlert.style.display = 'none'; }
+
+    function resetForm() {
+        selectedFile = null;
+        fileInput.value = '';
+        dropZone.classList.remove('file-selected', 'dragover');
+        dropZone.querySelector('.icon').innerHTML = '<i class="bi bi-cloud-upload-fill"></i>';
+        dropText.textContent = 'Drag & drop your CV here';
+    }
+</script>
+</body>
+</html>
