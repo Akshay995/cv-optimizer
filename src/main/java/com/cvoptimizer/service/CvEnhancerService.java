@@ -33,8 +33,8 @@ public class CvEnhancerService {
             .connectTimeout(Duration.ofSeconds(30))
             .build();
 
-    public CvData enhance(String rawCvText) throws Exception {
-        String prompt = buildPrompt(rawCvText);
+    public CvData enhance(String rawCvText, String jobDescription) throws Exception {
+        String prompt = buildPrompt(rawCvText, jobDescription);
         String requestBody = buildRequestBody(prompt);
 
         HttpRequest request = HttpRequest.newBuilder()
@@ -55,22 +55,58 @@ public class CvEnhancerService {
         return parseResponse(response.body());
     }
 
-    private String buildPrompt(String rawCvText) {
+    private String buildPrompt(String rawCvText, String jobDescription) {
+        boolean hasJd = jobDescription != null && !jobDescription.isBlank();
+
+        String jdSection = hasJd ? """
+
+                JOB DESCRIPTION TO TARGET:
+                ---
+                """ + jobDescription.trim() + """
+
+                ---
+                """ : "";
+
+        String jdInstructions = hasJd ? """
+                JOB-DESCRIPTION-SPECIFIC INSTRUCTIONS (apply these when a JD is provided):
+                JD-1. Extract every skill, tool, technology, methodology, and keyword from the JD.
+                JD-2. Naturally weave ALL matching keywords from the JD into the summary, skills, \
+                bullet points, and project descriptions wherever the candidate genuinely has that experience. \
+                Do NOT fabricate experience — only surface and emphasise what is already present in the CV.
+                JD-3. Mirror the exact terminology used in the JD (e.g. if the JD says "microservices" use \
+                "microservices", not "service-oriented architecture").
+                JD-4. Reorder experience bullets so the most JD-relevant achievements appear first.
+                JD-5. Craft the professional title and summary to directly address the role described in the JD.
+                JD-6. Prioritise JD-matching skills at the top of each skill category.
+                JD-7. Your goal is an ATS score above 90%% — keyword density, section completeness, \
+                and terminology alignment are all critical.
+
+                """ : "";
+
         return """
-                You are an expert technical resume writer specializing in software engineering, \
+                You are an expert technical resume writer specialising in software engineering, \
                 data science, AI/ML, DevOps, and cloud roles. Your task is to enhance a CV to be \
-                maximally tech-specific, ATS-optimized, and compelling for top-tier tech companies.
+                maximally tech-specific, ATS-optimised, and compelling for top-tier tech companies.
+                """ + jdSection + """
 
-                Instructions:
-                1. Extract ALL information from the provided CV.
-                2. Rewrite bullet points using strong action verbs (Engineered, Architected, Optimized, Deployed, etc.) \
-                and add quantified impact wherever reasonable (e.g., "reduced latency by 35%", "served 10K+ users").
-                3. Make the professional summary compelling, tech-focused, and 2-3 sentences max.
-                4. Organize skills into clean categories (Languages, Frameworks, Databases, Cloud & DevOps, Tools).
-                5. Keep all real information intact - do not invent facts, only enhance wording.
-                6. Make project descriptions highlight technical depth and impact.
-
-                Return ONLY valid JSON - no markdown, no explanation, just raw JSON:
+                GENERAL INSTRUCTIONS:
+                1. Extract ALL information from the provided CV — omit nothing.
+                2. Rewrite bullet points using strong action verbs (Engineered, Architected, Optimised, \
+                Deployed, Spearheaded, Automated, Reduced, Scaled, etc.) and add quantified impact \
+                wherever reasonable (e.g., "reduced latency by 35%%", "served 10K+ users", \
+                "cut build time by 50%%").
+                3. Write a compelling, tech-focused professional summary of 2-3 sentences that \
+                immediately signals the candidate's core value proposition.
+                4. Organise skills into clean categories: Languages, Frameworks, Databases, \
+                Cloud & DevOps, Tools.
+                5. Keep all real information intact — do not invent facts, only enhance wording \
+                and surface relevant keywords already present in the CV.
+                6. Make project descriptions highlight technical depth, architecture decisions, \
+                scale, and measurable impact.
+                7. Ensure the CV structure is complete: summary, skills, experience, projects, \
+                education, certifications — include every section that has data.
+                """ + jdInstructions + """
+                Return ONLY valid JSON — no markdown, no explanation, just raw JSON:
                 {
                   "name": "Full Name",
                   "email": "email@example.com",
@@ -95,8 +131,8 @@ public class CvEnhancerService {
                       "location": "Bangalore, India",
                       "bullets": [
                         "Engineered a microservices-based order management system using Spring Boot and Kafka, processing 50K+ transactions/day.",
-                        "Optimized SQL query performance by 40% through strategic indexing and query refactoring.",
-                        "Led migration from monolithic architecture to AWS ECS, reducing deployment time by 60%."
+                        "Optimised SQL query performance by 40%% through strategic indexing and query refactoring.",
+                        "Led migration from monolithic architecture to AWS ECS, reducing deployment time by 60%%."
                       ]
                     }
                   ],

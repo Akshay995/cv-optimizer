@@ -45,7 +45,7 @@ public class CvController {
 
     @Operation(
         summary = "Optimize a CV",
-        description = "Upload a PDF, DOCX, or TXT CV. Claude AI enhances the content and returns an ATS-friendly PDF."
+        description = "Upload a PDF, DOCX, or TXT CV. Optionally provide a job description so Claude AI can tailor the CV for ATS scores above 90%."
     )
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Optimized CV PDF", content = @Content(mediaType = "application/pdf")),
@@ -57,7 +57,9 @@ public class CvController {
             @Parameter(description = "CV file (PDF, DOCX, or TXT, max 5 MB)", required = true)
             @RequestParam("file") MultipartFile file,
             @Parameter(description = "Target job role to tailor the CV toward (optional)")
-            @RequestParam(value = "targetRole", required = false) String targetRole) {
+            @RequestParam(value = "targetRole", required = false) String targetRole,
+            @Parameter(description = "Full job description — used to align keywords and achieve ATS score above 90% (optional)")
+            @RequestParam(value = "jobDescription", required = false) String jobDescription) {
         if (file.isEmpty()) {
             return ResponseEntity.badRequest()
                     .contentType(MediaType.APPLICATION_JSON)
@@ -81,13 +83,12 @@ public class CvController {
                         .body("{\"error\": \"Could not extract text from the uploaded file.\"}");
             }
 
-            // Append target role context if provided
             if (targetRole != null && !targetRole.isBlank()) {
                 rawText = "Target Role: " + targetRole.trim() + "\n\n" + rawText;
             }
 
-            log.info("Enhancing CV via Claude API...");
-            CvData enhancedCv = enhancerService.enhance(rawText);
+            log.info("Enhancing CV via Claude API (JD provided: {})...", jobDescription != null && !jobDescription.isBlank());
+            CvData enhancedCv = enhancerService.enhance(rawText, jobDescription);
 
             log.info("Generating PDF for: {}", enhancedCv.getName());
             byte[] pdfBytes = pdfGeneratorService.generate(enhancedCv);

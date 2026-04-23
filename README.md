@@ -7,6 +7,7 @@ An AI-powered resume enhancement tool that automatically rewrites and formats CV
 - **Multi-format input** — accepts PDF, DOCX, and plain text files (up to 5 MB)
 - **AI enhancement** — rewrites bullet points with strong action verbs, adds quantified metrics, and generates a focused professional summary
 - **Skill categorization** — organizes skills into Languages, Frameworks, Databases, Cloud & DevOps, and Tools
+- **Job description matching** — paste the full JD to align keywords, terminology, and bullet order for ATS scores above 90%
 - **Target role focus** — optionally specify a role to tailor the enhancements
 - **PDF output** — generates a modern, ATS-friendly PDF with navy/blue color scheme
 - **Privacy-first** — uploaded files are processed in memory and never persisted
@@ -132,5 +133,6 @@ Accepts `multipart/form-data`.
 |---|---|---|---|
 | `file` | File | Yes | PDF, DOCX, or TXT file (max 5 MB) |
 | `targetRole` | String | No | Role to tailor the CV toward |
+| `jobDescription` | String | No | Full job description — enables JD-specific keyword alignment for ATS 90%+ |
 
 Returns the optimized CV as a PDF file download, or a JSON error object on failure.

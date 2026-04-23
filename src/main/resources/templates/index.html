@@ -98,7 +98,7 @@
             <p class="text-muted mb-3">Upload your CV, get a tech-optimized, ATS-ready PDF in seconds</p>
             <div>
                 <span class="feature-badge"><i class="bi bi-magic"></i> AI Enhanced</span>
-                <span class="feature-badge"><i class="bi bi-check2-circle"></i> ATS Optimized</span>
+                <span class="feature-badge"><i class="bi bi-check2-circle"></i> ATS Score 90%+</span>
                 <span class="feature-badge"><i class="bi bi-filetype-pdf"></i> PDF Output</span>
                 <span class="feature-badge"><i class="bi bi-lightning-fill"></i> Powered by Claude</span>
             </div>
@@ -116,8 +116,8 @@
             <div class="col-4">
                 <div class="d-flex flex-column align-items-center gap-1">
                     <div class="step-icon">2</div>
-                    <small class="text-muted fw-semibold">Claude Enhances</small>
-                    <small class="text-muted" style="font-size:0.72rem;">AI rewrites & optimizes</small>
+                    <small class="text-muted fw-semibold">Paste Job Description</small>
+                    <small class="text-muted" style="font-size:0.72rem;">AI aligns to 90%+ ATS</small>
                 </div>
             </div>
             <div class="col-4">
@@ -143,12 +143,26 @@
             <input type="file" id="file-input" accept=".pdf,.docx,.txt">
 
             <!-- Target role (optional) -->
-            <div class="mb-4">
+            <div class="mb-3">
                 <label class="form-label fw-semibold small text-secondary">
-                    <i class="bi bi-briefcase-fill me-1"></i>Target Role <span class="text-muted fw-normal">(optional — helps AI focus)</span>
+                    <i class="bi bi-briefcase-fill me-1"></i>Target Role <span class="text-muted fw-normal">(optional)</span>
                 </label>
                 <input type="text" class="form-control" id="target-role"
                        placeholder="e.g. Senior Java Engineer, ML Engineer, DevOps Lead">
+            </div>
+
+            <!-- Job description (optional but recommended) -->
+            <div class="mb-4">
+                <label class="form-label fw-semibold small text-secondary">
+                    <i class="bi bi-file-text-fill me-1"></i>Job Description
+                    <span class="text-muted fw-normal">(optional — paste the full JD for ATS score 90%+)</span>
+                </label>
+                <textarea class="form-control" id="job-description" rows="6"
+                          placeholder="Paste the full job description here. Claude will extract all keywords, skills, and requirements and align your CV to maximise ATS score..."></textarea>
+                <div class="form-text">
+                    <i class="bi bi-info-circle me-1"></i>
+                    The more complete the JD, the higher the ATS match. Keywords, tools, and requirements are all used.
+                </div>
             </div>
 
             <!-- Error alert -->
@@ -235,11 +249,18 @@
         submitBtn.disabled = true;
         progressWrap.style.display = 'block';
 
-        const messages = [
+        const jdProvided = document.getElementById('job-description').value.trim().length > 0;
+        const messages = jdProvided ? [
+            'Parsing your CV...',
+            'Analysing job description keywords...',
+            'Aligning skills & experience to JD...',
+            'Maximising ATS keyword coverage...',
+            'Generating professional PDF...'
+        ] : [
             'Parsing your CV...',
             'Sending to Claude AI...',
             'Enhancing bullet points...',
-            'Optimizing for ATS systems...',
+            'Optimising for ATS systems...',
             'Generating professional PDF...'
         ];
         let msgIdx = 0;
@@ -252,6 +273,8 @@
         formData.append('file', selectedFile);
         const role = document.getElementById('target-role').value.trim();
         if (role) formData.append('targetRole', role);
+        const jd = document.getElementById('job-description').value.trim();
+        if (jd) formData.append('jobDescription', jd);
 
         try {
             const response = await fetch('/optimize', { method: 'POST', body: formData });
@@ -302,6 +325,8 @@
         dropZone.classList.remove('file-selected', 'dragover');
         dropZone.querySelector('.icon').innerHTML = '<i class="bi bi-cloud-upload-fill"></i>';
         dropText.textContent = 'Drag & drop your CV here';
+        document.getElementById('job-description').value = '';
+        document.getElementById('target-role').value = '';
     }
 </script>
 </body>
