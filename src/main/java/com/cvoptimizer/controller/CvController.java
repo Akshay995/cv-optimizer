@@ -4,6 +4,12 @@ import com.cvoptimizer.model.CvData;
 import com.cvoptimizer.service.CvEnhancerService;
 import com.cvoptimizer.service.CvParserService;
 import com.cvoptimizer.service.PdfGeneratorService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ByteArrayResource;
@@ -11,10 +17,10 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+@Tag(name = "CV Optimizer", description = "Upload a CV and receive an AI-enhanced, ATS-optimized PDF")
 @Controller
 public class CvController {
 
@@ -37,9 +43,21 @@ public class CvController {
         return "index";
     }
 
+    @Operation(
+        summary = "Optimize a CV",
+        description = "Upload a PDF, DOCX, or TXT CV. Claude AI enhances the content and returns an ATS-friendly PDF."
+    )
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Optimized CV PDF", content = @Content(mediaType = "application/pdf")),
+        @ApiResponse(responseCode = "400", description = "Invalid input (empty file, unsupported format, or file too large)", content = @Content(mediaType = "application/json")),
+        @ApiResponse(responseCode = "500", description = "Processing error", content = @Content(mediaType = "application/json"))
+    })
     @PostMapping("/optimize")
-    public ResponseEntity<?> optimizeCv(@RequestParam("file") MultipartFile file,
-                                        @RequestParam(value = "targetRole", required = false) String targetRole) {
+    public ResponseEntity<?> optimizeCv(
+            @Parameter(description = "CV file (PDF, DOCX, or TXT, max 5 MB)", required = true)
+            @RequestParam("file") MultipartFile file,
+            @Parameter(description = "Target job role to tailor the CV toward (optional)")
+            @RequestParam(value = "targetRole", required = false) String targetRole) {
         if (file.isEmpty()) {
             return ResponseEntity.badRequest()
                     .contentType(MediaType.APPLICATION_JSON)
