@@ -1,2 +1,9 @@
 # Project exclude paths
 /target/
+
+# Compiled class files
+*.class
+*.txt
+
+# IDE
+.idea/
